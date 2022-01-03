@@ -1,0 +1,6 @@
+become_pass: ""
+email_address:
+
+admin_user: "{{ ansible_user }}"
+repo_user:
+ancillary_user:

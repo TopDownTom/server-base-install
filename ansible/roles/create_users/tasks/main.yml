@@ -1,0 +1,56 @@
+---
+
+- block:
+  - name: Set your seed # use a string, ansible_var, whatever
+    set_fact:
+      pass_seed:
+
+  - name: Create users
+    user:
+      name: "{{ userinfo.user }}"
+      password: "{{ userinfo.pass | password_hash('sha512', 65534 | random(seed=pass_seed) | string) }}"
+      uid: "{{ userinfo.uid }}"
+      shell: "{{ userinfo.shell | default('/bin/bash') }}"
+      groups: "{{ userinfo.other_groups }}"
+    loop:
+      - { user: "{{ ancillary_user }}", pass: "{{ ancillary_user_pass }}", uid: 1000, other_groups: '' }
+      - { user: "{{ repo_user }}", pass: "{{ repo_user_pass }}", uid: 1002, shell: /bin/rbash, other_groups: '' }
+      - { user: "{{ admin_user }}", pass: "{{ admin_pass }}", uid: 1001, other_groups: "sudo,www-data,systemd-journal,{{ repo_user }}" }
+    loop_control:
+      loop_var: userinfo
+
+  - name: Ensure gid=uid
+    group:
+      name: "{{ groupinfo.user }}"
+      gid: "{{ groupinfo.gid }}"
+    loop:
+      - { user: "{{ ancillary_user }}", gid: 1000 }
+      - { user: "{{ admin_user }}", gid: 1001 }
+      - { user: "{{ repo_user }}", gid: 1002 }
+    loop_control:
+      loop_var: groupinfo
+
+  - name: Place {{ repo_user }} .profile
+    copy:
+      content: |
+        . "$HOME/.bashrc"
+        readonly PATH=$HOME/userbin
+        export PATH
+      dest: "/home/{{ repo_user }}/.profile"
+
+  - name: Ensure sudoers files included
+    lineinfile:
+      path: /etc/sudoers
+      regex: "#includedir /etc/sudoers.d"
+      line: "#includedir /etc/sudoers.d"
+
+  - name: Place sudoers.d file
+    template:
+      src: sudoers.conf
+      dest: "/etc/sudoers.d/{{ hostname }}"
+      mode: 0440
+      owner: root
+      group: root
+
+  no_log: true
+  become: true

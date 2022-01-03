@@ -1,0 +1,11 @@
+---
+
+- name: Allow http/https ports
+  command: "/usr/sbin/ufw allow {{ web_ports }}"
+  loop:
+    - 80
+    - 443
+    - 22
+  loop_control:
+    loop_var: web_ports
+  become: true

@@ -1,0 +1,34 @@
+---
+
+- name: Create webroot dir
+  file:
+    dest: "{{ webroot }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: "{{ ansible_user }}"
+  become: true
+
+- name: "Create {{ hostname }} top-level directories"
+  file:
+    dest: "{{ webroot }}/{{ top_level_dirs }}"
+    state: directory
+    mode: 0755
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  loop:
+    - static
+    - static/main
+    - styles
+    - templates
+  loop_control:
+    loop_var: top_level_dirs
+
+- name: Create repos top-level directory
+  file:
+    dest: "{{ webroot }}/repos"
+    state: directory
+    mode: 0755
+    owner: root
+    group: "{{ repo_user }}"
+  become: true

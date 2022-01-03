@@ -1,0 +1,7 @@
+---
+
+- hosts: all
+  roles:
+    - { role: package_install }
+    - { role: nginx_setup }
+    - { role: certbot_setup }

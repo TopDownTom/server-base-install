@@ -1,0 +1,10 @@
+---
+
+- name: Are you totally sure? Continue if so.
+  pause:
+
+- name: Destroy site
+  file:
+    path: "{{ webroot }}"
+    state: absent
+  become: true

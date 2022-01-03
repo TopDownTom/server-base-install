@@ -1,0 +1,59 @@
+---
+
+- name: Set the state to latest (installed)
+  set_fact:
+    package_state: latest
+
+- name: Set the state to uninstall if tagged
+  set_fact:
+    package_state: absent
+  tags: never,uninstall
+
+- block:
+  - name: Define Ubuntu-based packages
+    set_fact:
+      apt_packages:
+        - apache2-utils
+        - git
+        - gunicorn
+        - nginx-core
+        - python3-certbot-nginx
+        - python3-passlib
+        - ufw
+
+  - name: "{{ package_state }} needed apt packages"
+    ansible.builtin.apt:
+      name: "{{ packages }}"
+      state: "{{ package_state }}"
+      update_cache: true
+      autoremove: true
+    loop: "{{ apt_packages }}"
+    loop_control:
+      loop_var: packages
+    become: true
+  tags: always
+  when: ansible_facts['pkg_mgr'] == 'apt'
+
+- block: # NOTE: mostly un-tested
+  - name: Define Arch-bashed packages
+    set_fact:
+      pacman_packages:
+        - apr-util
+        - certbot-nginx
+        - git
+        - gunicorn
+        - nginx
+        - python-passlib
+        - ufw
+
+  - name: Install needed Arch packages
+    ansible.builtin.pacman:
+      name: "{{ packages }}"
+      state: "{{ package_state }}"
+      update_cache: true
+    loop: "{{ pacman_packages }}"
+    loop_control:
+      loop_var: packages
+    become: true
+  tags: always
+  when: ansible_facts['pkg_mgr'] == 'pacman'

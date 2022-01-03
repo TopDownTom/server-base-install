@@ -1,0 +1,7 @@
+ansible_host:
+ansible_user: # this will also be the admin_user
+ansible_become_pass: "{{ become_pass }}"
+hostname:
+fqdn:
+
+window_title: "Phrase"

@@ -1,0 +1,12 @@
+# general
+webroot: /var/www/{{ hostname }}/site
+webserver: nginx
+
+# users who you'd possibly log in to a shell with
+shell_users: [user1,user2,userN]
+
+# htpasswd
+htpasswd_user: htuser
+
+# repositories
+bare_repos: [repo1.git, repo2.git, repoN.git]

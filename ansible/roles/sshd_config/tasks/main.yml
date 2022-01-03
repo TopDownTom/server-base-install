@@ -1,0 +1,75 @@
+---
+
+- block:
+  - name: Recreate sshd_config
+    file:
+      path: "{{ ssh_dirs.dir }}"
+      state: "{{ ssh_dirs.status }}"
+    loop:
+      - { dir: /etc/ssh/config.d, status: absent }
+      - { dir: /etc/ssh/auth_keys, status: absent }
+      - { dir: /etc/ssh/config.d, status: directory }
+      - { dir: /etc/ssh/auth_keys, status: directory }
+    loop_control:
+      loop_var: ssh_dirs
+    register: ssh_directories
+
+  - name: Append default sshd_config with Include for custom sshd_config rules
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "Include /etc/ssh/config.d/*.conf"
+      line: "Include /etc/ssh/config.d/*.conf"
+      state: present
+      insertafter: EOF
+      validate: /usr/sbin/sshd -t -f %s
+    register: append_default_sshd_config
+
+  - name: Place authorized_keys file
+    assemble:
+      src: "{{ role_path }}/files"
+      dest: "/etc/ssh/auth_keys/{{ remote_users }}"
+      remote_src: false
+    loop: "{{ shell_users }}"
+    loop_control:
+      loop_var: remote_users
+    register: key_files
+
+  - name: Create ~/.ssh dirs
+    file:
+      path: "/home/{{ remote_ssh_dirs }}/.ssh"
+      state: directory
+      mode: 0700
+    loop: "{{ shell_users }}"
+    loop_control:
+      loop_var: remote_ssh_dirs
+
+  - name: Empty canonical ~/.ssh/authorized_keys files
+    copy:
+      dest: "/home/{{ blank_remote_users }}/.ssh/authorized_keys"
+      content: "No longer used, sorry."
+      owner: "{{ blank_remote_users }}"
+      group: "{{ blank_remote_users }}"
+      mode: 0400
+    loop: "{{ shell_users }}"
+    loop_control:
+      loop_var: blank_remote_users
+
+  - name: Place host unique sshd_config file
+    template:
+      src: "templates/host_sshd_config.conf"
+      dest: "/etc/ssh/config.d/{{ hostname }}.conf"
+      mode: 0644
+      validate: /usr/sbin/sshd -t -f %s
+    register: host_sshd_config
+
+  - name: Restart sshd
+    systemd:
+      name: sshd
+      state: restarted
+    when: >
+      (key_files.changed == true) or
+      (append_default_sshd_config.changed == true ) or
+      (host_sshd_config.changed == true) or
+      (ssh_directories.results[0].changed == true) or
+      (ssh_directories.results[1].changed == true)
+  become: true

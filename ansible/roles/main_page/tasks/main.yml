@@ -1,0 +1,27 @@
+---
+
+- name: Deploy main landing page file
+  ansible.builtin.template:
+    src: main.j2
+    dest: "{{ webroot }}/main.html"
+    mode: 0644
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  tags: main
+
+- name: Deploy css style sheet
+  ansible.builtin.copy:
+    src: styleSheet.css
+    dest: "{{ webroot }}/styles/styleSheet.css"
+    mode: 0644
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  tags: css
+
+- name: Deploy main picture
+  ansible.builtin.copy:
+    src: mainPicture.jpg
+    dest: "{{ webroot }}/static/main/"
+    mode: 0644
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"

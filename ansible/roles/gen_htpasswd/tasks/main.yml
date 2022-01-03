@@ -1,0 +1,10 @@
+---
+
+- name: Create htpasswd for user
+  community.general.htpasswd:
+    name: "{{ htpasswd_user }}"
+    password: "{{ htpasswd_password }}"
+    path: "/etc/nginx/{{ htpasswd_user }}"
+    owner: root
+    group: root
+  become: true

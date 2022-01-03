@@ -1,0 +1,93 @@
+:root {
+  --radius-of-border: 7px;
+  --header-box-width: 70vw;
+  --url-hover-purple: #dea3d6;
+  --page-background: #353839;
+  --cyan: #5bbcc8;
+  --blue-soft: #5cc1cd;
+  --green-cyan: #85c495;
+  --green-pale: #50FA7B;
+  --grey-dark: #adadad;
+  --grey-light: #c2c3c4;
+  --purple-light: #caa9fa;
+  --red-clay: #b36b65;
+}
+body {
+  background: var(--page-background);
+  color: var(--grey-light);
+  white-space: normal;
+  font-size: 20px;
+  margin-top: .5vw;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+a:link {
+  color: var(--blue-soft);
+}
+a:hover {
+  color: var(--url-hover-purple);
+}
+h1 {
+  color: var(--cyan);
+}
+h2 {
+  font-weight: bold;
+  color: var(--purple-light);
+}
+h3 {
+  font-weight: bold;
+  color: var(--red-clay);
+  font-size: 40px;
+}
+pre {
+  color: var(--grey-light);
+  font-size: 22px;
+  white-space: pre-wrap;
+}
+summary {
+  width: max-content; /* ensure clickable area only as long as the text */
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--grey-dark);
+}
+ul li {
+  color: var(--green-pale);
+}
+#mainPageHeaderBox {
+  background: black;
+  width: var(--header-box-width);
+  border-radius: var(--radius-of-border);
+  padding: .05%;
+}
+#mainPageHeaderBox ul {
+  padding-left: 0px;
+}
+#mainPageHeaderBox ul li {
+  display: inline-block;
+  font-size: 30px;
+}
+#mainPageHeaderBox a:link {
+  color: var(--green-cyan);
+}
+#mainPageHeaderBox a:hover {
+  color: var(--url-hover-purple);
+}
+#aboutBubble {
+  border-radius: var(--radius-of-border);
+  color: lime;
+  background-color: black;
+  padding: .05%;
+  width: var(--header-box-width);
+}
+/*Floating Back-To-Top Button https://stackoverflow.com/questions/32102747/how-to-make-a-back-to-top-button-using-css-and-html-only */
+#returnToTop {
+  position: fixed;
+  bottom: 10px;
+  left: 95%;
+  max-width: 50px;
+  width: 100%;
+  font-size: 12px;
+  background-color: transparent;
+  border-color: transparent;
+  color: lime;
+}

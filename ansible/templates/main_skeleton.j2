@@ -1,0 +1,23 @@
+{% include "standardTopper.j2" %}
+<html>
+<body>
+<center><h3>Page Main Header</h3></center>
+
+<center><div id="aboutBubble">
+Something about the page.
+</div></center>
+
+<h1>Some Node</h1><pre>
+<em>Some text about the node</em>
+
+<a href="/path/to/item" target="_blank" rel="noopener noreferrer">Click to open in a new tab</a>
+<ul class="collapsibleList">
+<li><label for="uniqueLabel">Click to expand/hide</label>
+<input type="checkbox" id="uniqueLabel" /><ul><li><pre>{% include "thing.html" %}</pre></li></ul>
+</ul>
+
+
+</pre>
+{% include "standardFooter.j2" %}
+</body>
+</html>

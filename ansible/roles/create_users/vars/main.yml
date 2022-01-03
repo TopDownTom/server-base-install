@@ -1,0 +1,4 @@
+# THIS FILE MUST BE VAULTED
+admin_pass: "{{ become_pass }}"
+ancillary_user_pass:
+repo_user_pass:

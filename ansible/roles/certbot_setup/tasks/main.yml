@@ -1,0 +1,40 @@
+---
+
+- block:
+  - name: Ensure firewall rules are set
+    include_role:
+      name: firewall
+
+  - name: Check if a certificate exists
+    stat:
+      path: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
+    register: existing_cert
+    become: true
+
+  - block: # existing cert = true
+    - name: Try and renew an existing cert for this fqdn
+      command: certbot -n renew
+      register: cert_renewal_results
+
+    - name: Filter renewal attempt results
+      set_fact:
+        inter: "{{ cert_renewal_results.stdout_lines | regex_search('expires on(.*)$') | regex_replace('-') }}"
+
+    - name: Show renewal attempt results
+      debug: var=inter
+    when: existing_cert.stat.exists is true
+    become: true
+
+  - block: # existing cert = false
+    - name: Stop nginx
+      systemd:
+        name: nginx
+        state: stopped
+
+    # NOTE: This accepts the ToS. You should read these on your own before accepting them.
+    - name: Run certbot to obtain and install a certificate
+      command: "certbot -n certonly --standalone --agree-tos -m {{ email_address }} --domains {{ fqdn }}"
+      no_log: true
+    become: true
+    when: existing_cert.stat.exists is false
+  when: fqdn is defined

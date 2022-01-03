@@ -1,0 +1,40 @@
+---
+
+- block:
+  - name: Deploy main repo page
+    template:
+      src: main.j2
+      dest: "{{ webroot }}/repos/main.html"
+      mode: 0644
+      owner: root
+      group: "{{ repo_user }}"
+
+  - name: Create repo directories
+    file:
+      path: "{{ webroot }}/repos/{{ repo_dirs }}"
+      mode: 0755
+      owner: "{{ ansible_user }}"
+      group: "{{ repo_user }}"
+      state: directory
+    loop: "{{ bare_repos }}"
+    loop_control:
+      loop_var: repo_dirs
+
+  - name: Set perms on repo directories
+    command: "{{ perms_commands }}"
+    loop:
+      - "find {{ webroot }}/repos/ \\( -type d -exec chmod 0755 {} + \\) -o \\( -type f -exec chmod 0644 {} + \\)"
+      - "chown -R {{ ansible_user }}:{{ repo_user }} {{ webroot }}/repos/"
+    loop_control:
+      loop_var: perms_commands
+
+  - name: Create bare repos in above directories
+    command: "git init --bare"
+    args:
+      chdir: "{{ webroot }}/repos/{{ repo_dirs }}"
+    loop: "{{ bare_repos }}"
+    loop_control:
+      loop_var: repo_dirs
+    register: create_git_bare
+    changed_when: "'Reinitialized existing Git repository' not in create_git_bare.stdout"
+  become: true

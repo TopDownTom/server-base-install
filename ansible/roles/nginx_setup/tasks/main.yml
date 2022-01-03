@@ -1,0 +1,52 @@
+---
+
+- name: Check if server has an fqdn
+  set_fact:
+    server_fqdn: "{{ fqdn | default(hostname) }}"
+
+- block:
+  - name: Place nginx config for {{ fqdn | default(hostname) }}
+    template:
+      src: site.j2
+      dest: "/etc/nginx/sites-available/{{ hostname }}"
+      owner: root
+      group: root
+    register: site_config_file
+
+  - name: Unlink sites-enabled
+    file:
+      path: "/etc/nginx/sites-enabled/{{ hostname }}"
+      state: absent
+    when: site_config_file is changed
+
+  - name: Link to sites-enabled
+    file:
+      src: "/etc/nginx/sites-available/{{ hostname }}"
+      path: "/etc/nginx/sites-enabled/{{ hostname }}"
+      state: link
+    when: site_config_file is changed
+
+  - name: Remove default
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+
+  - name: Include certbot config
+    include_role:
+      name: certbot_setup
+    when: fqdn is defined
+
+  - name: Define where nginx bin is located # hacky, but i cannot figure out a better way around this
+    shell: whereis nginx | awk '{print $2}'
+    register: nginx_command_path
+
+  - name: Test nginx config
+    command: "sudo {{ nginx_command_path.stdout }} -t"
+    register: nginx_service
+
+  - name: Restart nginx
+    systemd:
+      name: nginx
+      state: restarted
+    when: "'successful' in nginx_service.stderr and site_config_file is changed"
+  become: true

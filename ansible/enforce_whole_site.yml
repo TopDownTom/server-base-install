@@ -1,0 +1,18 @@
+---
+
+- hosts: all
+  roles:
+    - { role: create_users }
+    - { role: package_install }
+    - { role: hostname }
+    - { role: sshd_config }
+    - { role: firewall }
+    - { role: create_dirs }
+    - { role: nginx_setup }
+    - { role: main_page }
+    - { role: fiction }
+    - { role: resume }
+    - { role: coffee }
+    - { role: tech }
+    - { role: repos }
+    - { role: gen_htpasswd }
