@@ -1,10 +1,26 @@
 ---
 
-- block:
-  - name: Recreate sshd_config
+- block: # become: true
+  - name: Create backup dir for config.d and auth_keys
+    tempfile:
+      state: directory
+    register: backup_sshd_dir
+
+  - name: Copy files to backup dirs
+    copy:
+      src: "{{sshd_backups.source}}"
+      dest: "{{sshd_backups.destination}}"
+      remote_src: true
+    loop:
+      - { source: /etc/ssh/config.d, destination: "{{backup_sshd_dir.path}}" }
+      - { source: /etc/ssh/auth_keys, destination: "{{backup_sshd_dir.path}}" }
+    loop_control:
+      loop_var: sshd_backups
+
+  - name: Recreate config.d and auth_keys
     file:
-      path: "{{ ssh_dirs.dir }}"
-      state: "{{ ssh_dirs.status }}"
+      path: "{{ssh_dirs.dir}}"
+      state: "{{ssh_dirs.status}}"
     loop:
       - { dir: /etc/ssh/config.d, status: absent }
       - { dir: /etc/ssh/auth_keys, status: absent }
@@ -72,4 +88,24 @@
       (host_sshd_config.changed == true) or
       (ssh_directories.results[0].changed == true) or
       (ssh_directories.results[1].changed == true)
+    register: sshd_state
+
+  - name: Remove backups once SSHD restart successful
+    file:
+      path: "{{backup_sshd_dir.path}}"
+      state: absent
+    when: sshd_state.status.ActiveState == "active"
   become: true
+
+  rescue:
+    - name: Replacing backups
+      copy:
+        src: "{{sshd_backup_replace.source}}"
+        dest: "{{sshd_backup_replace.destination}}"
+        remote_src: true
+      loop:
+        - { source: "{{backup_sshd_dir.path}}/config.d", destination: /etc/ssh/ }
+        - { source: "{{backup_sshd_dir.path}}/auth_keys", destination: /etc/ssh/ }
+      loop_control:
+        loop_var: sshd_backup_replace
+      become: true
