@@ -16,7 +16,7 @@ body {
   background: var(--page-background);
   color: var(--grey-light);
   white-space: normal;
-  font-size: 20px;
+  font-size: 18px;
   margin-top: .5vw;
   margin-left: 5%;
   margin-right: 5%;
@@ -41,7 +41,7 @@ h3 {
 }
 pre {
   color: var(--grey-light);
-  font-size: 22px;
+  font-size: 20px;
   white-space: pre-wrap;
 }
 summary {
@@ -91,3 +91,4 @@ ul li {
   border-color: transparent;
   color: lime;
 }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">

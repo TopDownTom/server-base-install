@@ -1,7 +1,7 @@
 ---
 
 - name: Deploy main landing page file
-  ansible.builtin.template:
+  template:
     src: main.j2
     dest: "{{ webroot }}/main.html"
     mode: 0644
@@ -10,7 +10,7 @@
   tags: main
 
 - name: Deploy css style sheet
-  ansible.builtin.copy:
+  copy:
     src: styleSheet.css
     dest: "{{ webroot }}/styles/styleSheet.css"
     mode: 0644
@@ -18,10 +18,18 @@
     group: "{{ ansible_user }}"
   tags: css
 
-- name: Deploy main picture
-  ansible.builtin.copy:
-    src: mainPicture.jpg
+- name: Find main page static files
+  command: "ls {{ playbook_dir }}/roles/main_page/files/"
+  register: main_page_static_files
+  delegate_to: localhost
+
+- name: Deploy main page static files
+  copy:
+    src: "{{ main_files }}"
     dest: "{{ webroot }}/static/main/"
     mode: 0644
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
+  loop: "{{ main_page_static_files.stdout_lines }}"
+  loop_control:
+    loop_var: main_files
